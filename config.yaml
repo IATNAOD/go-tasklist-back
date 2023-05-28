@@ -1,0 +1,18 @@
+---
+is_debug: true
+listen:
+  type: tcp
+  bind_ip: 127.0.0.1
+  port: 3000
+mongodb:
+  host: localhost
+  port: 27017
+  username:
+  password:
+  database: task-list
+  authDB:
+redis:
+  host: localhost
+  port: 6379
+  Password:
+  DB: 0
