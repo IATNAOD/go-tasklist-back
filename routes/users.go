@@ -105,7 +105,6 @@ func (h UsersHandler) GetCurrent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h UsersHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-
 	var createUserDTO models.CreateUserDTO
 	var unmarshalErr *json.UnmarshalTypeError
 
@@ -153,7 +152,6 @@ func (h UsersHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h UsersHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-
 	var LoginUserDTO models.LoginUserDTO
 	var unmarshalErr *json.UnmarshalTypeError
 

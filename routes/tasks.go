@@ -79,13 +79,12 @@ func (h TasksHandler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h TasksHandler) AddNewTask(w http.ResponseWriter, r *http.Request) {
-
-	var createTaskDTO models.CreateTaskDTO
+	var CreateTaskRB models.CreateTaskRB
 	var unmarshalErr *json.UnmarshalTypeError
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(&createTaskDTO)
+	err := decoder.Decode(&CreateTaskRB)
 	if err != nil {
 		if errors.As(err, &unmarshalErr) {
 			h.Parent.error(w, fmt.Sprintf("bad Request: wrong type provided for field - %s", unmarshalErr.Field), http.StatusBadRequest)
@@ -95,7 +94,7 @@ func (h TasksHandler) AddNewTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.Validate(createTaskDTO); err != nil {
+	if err := validator.Validate(CreateTaskRB); err != nil {
 		h.Parent.error(w, fmt.Sprintf("validataion error: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
@@ -106,7 +105,13 @@ func (h TasksHandler) AddNewTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createTaskDTO.UserID = user.ID
+	createTaskDTO := CreateTaskRB.Build(user.ID)
+
+	_, err = h.Services.TasksLists.GetUserTasksList(context.Background(), createTaskDTO.ListID, user.ID)
+	if err != nil {
+		h.Parent.error(w, fmt.Sprintf("can not find tasks list: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
 
 	task, err := h.Services.Tasks.AddTask(context.Background(), createTaskDTO)
 	if err != nil {
@@ -120,12 +125,12 @@ func (h TasksHandler) AddNewTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h TasksHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
-	var taskDTO models.Task
+	var UpdateTaskRB models.UpdateTaskRB
 	var unmarshalErr *json.UnmarshalTypeError
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(&taskDTO)
+	err := decoder.Decode(&UpdateTaskRB)
 	if err != nil {
 		if errors.As(err, &unmarshalErr) {
 			h.Parent.error(w, fmt.Sprintf("bad Request: wrong type provided for field - %s", unmarshalErr.Field), http.StatusBadRequest)
@@ -135,9 +140,7 @@ func (h TasksHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updateTaskDTO := taskDTO.BuildForUpdate()
-
-	if err := validator.Validate(updateTaskDTO); err != nil {
+	if err := validator.Validate(UpdateTaskRB); err != nil {
 		h.Parent.error(w, fmt.Sprintf("validataion error: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
@@ -148,7 +151,15 @@ func (h TasksHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, err := h.Services.Tasks.UpdateTask(context.Background(), taskDTO.ID, user.ID, updateTaskDTO)
+	updateTaskDTO := UpdateTaskRB.Build()
+
+	_, err = h.Services.TasksLists.GetUserTasksList(context.Background(), updateTaskDTO.ListID, user.ID)
+	if err != nil {
+		h.Parent.error(w, fmt.Sprintf("can not find tasks list: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	task, err := h.Services.Tasks.UpdateTask(context.Background(), UpdateTaskRB.ID, user.ID, updateTaskDTO)
 	if err != nil {
 		h.Parent.error(w, fmt.Sprintf("can not update task: %s", err.Error()), http.StatusInternalServerError)
 		return

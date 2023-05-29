@@ -37,7 +37,7 @@ func (s Tasks) GetAllUserTasks(ctx context.Context, uid string) (tasks []models.
 	return tasks, err
 }
 
-func (s Tasks) AddTask(ctx context.Context, task models.CreateTaskDTO) (u models.Task, err error) {
+func (s Tasks) AddTask(ctx context.Context, task *models.CreateTaskDTO) (u models.Task, err error) {
 	result, err := s.collection.InsertOne(ctx, task)
 	if err != nil {
 		return u, err

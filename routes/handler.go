@@ -35,11 +35,13 @@ func NewRouter(services *services.Services, rdb *redis.Client, middlewares *midd
 }
 
 func (r *Router) Register() {
-	userHandler := NewUsersHandler(r)
-	taskHandler := NewTasksHandler(r)
+	usersHandler := NewUsersHandler(r)
+	tasksListsHandler := NewTasksListsHandler(r)
+	tasksHandler := NewTasksHandler(r)
 
-	userHandler.RegisterUsersRoutes()
-	taskHandler.RegisterTasksRoutes()
+	usersHandler.RegisterUsersRoutes()
+	tasksListsHandler.RegisterTasksListsRoutes()
+	tasksHandler.RegisterTasksRoutes()
 }
 
 func (router *Router) getUser(r *http.Request) (u *models.User, err error) {
